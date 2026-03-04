@@ -1,59 +1,29 @@
 # Python
 __pycache__/
 *.py[cod]
-*$py.class
-*.so
-.Python
-build/
-develop-eggs/
-dist/
-downloads/
-eggs/
-.eggs/
-lib/
-lib64/
-parts/
-sdist/
-var/
-wheels/
+*.pyo
 *.egg-info/
-.installed.cfg
+dist/
+build/
 *.egg
 
-# Virtual Environment
-.venv/
-venv/
-env/
-ENV/
+# SQLite database (generated at runtime)
+*.db
 
-# PyTorch
-*.pth
-*.pt
-
-# Node / Extension
-extension/node_modules/
-extension/out/
-*.vsix
-
-# IDEs
+# IDE
 .vscode/
 .idea/
 *.swp
 *.swo
-*~
 
 # OS
 .DS_Store
 Thumbs.db
 
-# Jupyter
-.ipynb_checkpoints/
-*.ipynb
+# Virtual environments
+venv/
+.venv/
+env/
 
 # Logs
 *.log
-
-# Testing
-.pytest_cache/
-.coverage
-htmlcov/
