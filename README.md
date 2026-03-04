@@ -2,7 +2,7 @@
 
 > **An AI assistant that watches ML models train and suggests fixes when problems occur.**
 
-MLCopilot AI is a prototype intelligent debugging assistant for ML engineers. It monitors model training in real time, detects anomalies, performs root-cause analysis, and provides actionable fix suggestions — all automatically.
+MLCopilot AI is an intelligent debugging assistant for ML engineers. It monitors model training in real time, detects anomalies, performs root-cause analysis, and provides actionable fix suggestions — all automatically through a polished interactive dashboard.
 
 ---
 
@@ -15,7 +15,7 @@ MLCopilot AI is a prototype intelligent debugging assistant for ML engineers. It
 | **Root Cause Engine** | Infers likely causes with confidence scoring |
 | **Suggestion Engine** | Generates fixes, parameter changes, code snippets & explanations |
 | **Hyperparameter Optimizer** | Optuna-powered search for optimal training configs |
-| **Streamlit Dashboard** | Interactive web UI for monitoring and analysis |
+| **Interactive Dashboard** | 6-page Streamlit UI with Plotly charts and live monitoring |
 | **REST API** | FastAPI backend for programmatic access |
 
 ### Detectable Problems
@@ -33,7 +33,7 @@ MLCopilot AI is a prototype intelligent debugging assistant for ML engineers. It
 ## 📁 Project Structure
 
 ```
-mlcopilot/
+MLCopilot AI/
 ├── backend/
 │   ├── main_api.py                 # FastAPI entry point
 │   ├── routes/
@@ -52,8 +52,8 @@ mlcopilot/
 ├── database/
 │   └── storage.py                  # SQLite storage layer
 ├── dashboard/
-│   └── streamlit_app.py            # Interactive web dashboard
-├── run_demo.py                     # One-command demo runner
+│   └── streamlit_app.py            # Interactive web dashboard (6 pages)
+├── run_demo.py                     # Application launcher
 ├── requirements.txt
 └── README.md
 ```
@@ -65,51 +65,72 @@ mlcopilot/
 ### 1. Install Dependencies
 
 ```bash
-cd mlcopilot
 pip install -r requirements.txt
 ```
 
-### 2. Start the Backend Server
-
-```bash
-uvicorn backend.main_api:app --reload --host 0.0.0.0 --port 8000
-```
-
-The API will be available at `http://localhost:8000`. Interactive docs at `http://localhost:8000/docs`.
-
-### 3. Run a Training Scenario
-
-Open a **new terminal** and run one of the sample training scenarios:
-
-```bash
-# Exploding gradients (high learning rate)
-python ml_pipeline/sample_training.py --scenario exploding_gradients
-
-# Overfitting (large model + tiny dataset)
-python ml_pipeline/sample_training.py --scenario overfitting
-
-# Vanishing gradients (deep sigmoid network)
-python ml_pipeline/sample_training.py --scenario vanishing_gradients
-
-# Healthy training (baseline)
-python ml_pipeline/sample_training.py --scenario healthy
-```
-
-MLCopilot will **automatically detect issues** and print analysis reports in real time.
-
-### 4. Open the Dashboard (Optional)
-
-```bash
-streamlit run dashboard/streamlit_app.py
-```
-
-### 5. Run the Full Demo
+### 2. Launch the Full Application
 
 ```bash
 python run_demo.py
 ```
 
-This starts the server, runs all training scenarios, and displays results.
+This starts both the FastAPI backend and the Streamlit dashboard automatically.
+
+- **Dashboard** → http://localhost:8501
+- **API Docs** → http://localhost:8000/docs
+
+### 3. Or Start Components Separately
+
+```bash
+# Terminal 1 — Backend API
+uvicorn backend.main_api:app --reload --host 0.0.0.0 --port 8000
+
+# Terminal 2 — Dashboard
+streamlit run dashboard/streamlit_app.py
+```
+
+> **Note:** The dashboard auto-starts the backend if it's not running, so you can also just run `streamlit run dashboard/streamlit_app.py` directly.
+
+---
+
+## 🖥️ Dashboard Pages
+
+### 📊 Dashboard
+Overview with KPIs (total experiments, running, completed), recent experiment cards with mini charts, and feature descriptions.
+
+### 🚀 Run Training
+Select from 4 built-in scenarios (Exploding Gradients, Overfitting, Vanishing Gradients, Healthy Baseline). Launches training directly from the UI with **live progress bars**, **real-time metric updates**, and **instant anomaly alerts**.
+
+### 📈 Experiment Monitor
+Deep-dive into any experiment with interactive Plotly charts:
+- **Loss Curves** (train + validation with area fill)
+- **Accuracy Curves**
+- **Gradient Norm** (with exploding threshold line)
+- **Learning Rate Schedule**
+- **4-panel Overview**
+- **Raw Metrics Table**
+
+### 🔍 Analysis & Diagnostics
+Run a full analysis on any experiment. Shows:
+- **Detected issues** with severity badges and evidence
+- **Root cause analysis** with confidence percentages
+- **Fix suggestions** with code snippets, parameter changes, and explanations
+- **Downloadable text report**
+- **Analysis history**
+
+### ⚙️ Hyperparameter Optimizer
+Configure and run Optuna-powered Bayesian optimization:
+- Adjustable trials, epochs, and sample count
+- Searches over LR, hidden size, depth, dropout, optimizer, batch size
+- Shows **best parameters**, **trial scatter plot**, and **optimization progress curve**
+
+### 🧪 AI Advisor
+Instant advice for any ML training problem — select a problem, choose severity, and get:
+- Root causes with confidence bars
+- Ranked fix recommendations
+- Ready-to-use code snippets
+- Suggested parameter changes
+- Plain-English explanations
 
 ---
 
@@ -128,14 +149,32 @@ This starts the server, runs all training scenarios, and displays results.
 
 ---
 
-## 📊 Example Output
+## 🔬 Training Scenarios
+
+| Scenario | What Goes Wrong | Expected Detection |
+|----------|----------------|-------------------|
+| `exploding_gradients` | LR=0.5, no clipping | Exploding Gradients, LR Too High |
+| `overfitting` | 512-hidden model on 50 samples | Overfitting |
+| `vanishing_gradients` | 15-layer sigmoid, tiny init | Vanishing Gradients |
+| `healthy` | Well-configured baseline | No issues ✅ |
+
+Run any scenario from the CLI:
+```bash
+python ml_pipeline/sample_training.py --scenario exploding_gradients --api-url http://localhost:8000
+```
+
+Or run them directly from the dashboard's **🚀 Run Training** page.
+
+---
+
+## 📊 Example Analysis Output
 
 ```
 ============================================================
   MLCopilot AI - Training Analysis Report
 ============================================================
 
-🟠 Issue #1: Exploding Gradients
+[CRITICAL] Issue #1: Exploding Gradients
 ----------------------------------------
 
   Root Cause Analysis:
@@ -151,31 +190,19 @@ This starts the server, runs all training scenarios, and displays results.
     learning_rate: 0.0003
     max_grad_norm: 1.0
 
+  Code Suggestion:
+    optimizer.zero_grad()
+    loss.backward()
+    torch.nn.utils.clip_grad_norm_(model.parameters(), max_norm=1.0)
+    optimizer.step()
+
   Explanation:
     Large gradients are destabilizing the training process.
     Reducing the learning rate lowers the magnitude of parameter
     updates. Gradient clipping caps the norm of gradients to
     prevent explosive growth.
-
 ============================================================
 ```
-
----
-
-## 🧪 Hyperparameter Optimization
-
-```bash
-python optimizer/hyperparameter_optimizer.py
-```
-
-Uses Optuna TPE sampler with median pruning to search over:
-- Learning rate
-- Hidden dimensions
-- Network depth
-- Dropout rate
-- Optimizer type (Adam/AdamW/SGD)
-- Weight decay
-- Batch size
 
 ---
 
@@ -191,7 +218,7 @@ Uses Optuna TPE sampler with median pruning to search over:
 │                    │  Engine      │  Engine           │
 ├──────────────────────────────────────────────────────┤
 │                  Processing Layer                     │
-│         FastAPI Server  │  Metrics Monitor            │
+│   Metrics Monitor  │  Hyperparameter Optimizer        │
 ├──────────────────────────────────────────────────────┤
 │                    Data Layer                         │
 │         SQLite Storage  │  Training Logs              │
@@ -202,15 +229,19 @@ Uses Optuna TPE sampler with median pruning to search over:
 
 ## 🛠️ Tech Stack
 
-- **Python 3.10+**
-- **FastAPI** — Backend API server
-- **PyTorch** — Sample ML training pipeline
-- **Optuna** — Hyperparameter optimization
-- **Streamlit** — Interactive dashboard
-- **SQLite** — Lightweight data storage
+| Technology | Purpose |
+|-----------|---------|
+| **Python 3.10+** | Core language |
+| **FastAPI** | Backend REST API |
+| **PyTorch** | ML training pipeline |
+| **Optuna** | Hyperparameter optimization |
+| **Streamlit** | Interactive dashboard |
+| **Plotly** | Interactive charts & visualizations |
+| **SQLite** | Lightweight persistent storage |
+| **Pandas** | Data manipulation |
 
 ---
 
 ## 📝 License
 
-MIT — Built for hackathon demonstration purposes.
+MIT
