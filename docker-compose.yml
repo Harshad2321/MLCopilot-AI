@@ -1,0 +1,51 @@
+# MLCopilot AI — Docker Compose
+# Local development with PostgreSQL (mirrors the AWS RDS setup)
+#
+# Start everything:  docker compose up --build
+# Stop:              docker compose down
+# Reset DB:          docker compose down -v
+
+version: "3.9"
+
+services:
+
+  # ── FastAPI Backend ─────────────────────────────────────────────────────────
+  api:
+    build: .
+    container_name: mlcopilot-api
+    restart: unless-stopped
+    ports:
+      - "8000:8000"
+    env_file:
+      - .env
+    environment:
+      # Override DATABASE_URL to point at the local postgres container
+      DATABASE_URL: postgresql://mlcopilot:mlcopilot@db:5432/mlcopilot
+    depends_on:
+      db:
+        condition: service_healthy
+    volumes:
+      # Mount database folder so SQLite persists if DATABASE_URL is unset
+      - ./database:/app/database
+
+  # ── PostgreSQL (mirrors AWS RDS) ────────────────────────────────────────────
+  db:
+    image: postgres:15-alpine
+    container_name: mlcopilot-db
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER:     mlcopilot
+      POSTGRES_PASSWORD: mlcopilot
+      POSTGRES_DB:       mlcopilot
+    ports:
+      - "5432:5432"
+    volumes:
+      - pg_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U mlcopilot"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+volumes:
+  pg_data:

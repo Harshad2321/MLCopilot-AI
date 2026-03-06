@@ -1,8 +1,174 @@
 # 🤖 MLCopilot AI
 
-> **An AI assistant that watches ML models train and suggests fixes when problems occur.**
+> **AI for Bharat Hackathon (powered by AWS) — AI for Learning & Developer Productivity**
 
-MLCopilot AI is an intelligent debugging assistant for ML engineers. It monitors model training in real time, detects anomalies, performs root-cause analysis, and provides actionable fix suggestions — all automatically through a polished interactive dashboard.
+MLCopilot AI is an intelligent debugging assistant for ML engineers.  
+It monitors model training **in real time**, detects ML issues automatically, performs **root-cause analysis**, and suggests **actionable fixes** — all through a polished interactive dashboard.
+
+Train your model locally → metrics are streamed to the backend → problems are explained → fixes are shown on the dashboard.
+
+---
+
+## ✨ Features
+
+| Module | Description |
+|--------|-------------|
+| **SDK Logger** | Two-line integration — `start_monitoring()` + `log()` |
+| **Anomaly Detector** | Rule-based detection of 5+ common ML problems |
+| **Root Cause Engine** | Infers likely causes with human-readable explanations |
+| **LLM Engine** | Optional GPT-4o / Claude integration for richer explanations |
+| **REST API** | FastAPI backend — POST metrics, GET analysis |
+| **Live Dashboard** | Streamlit UI with real-time charts and issue cards |
+
+---
+
+## 🚀 Quick Start
+
+### 1. Install dependencies
+
+```bash
+pip install -r requirements.txt
+```
+
+### 2. Start the backend (Terminal 1)
+
+```bash
+uvicorn backend.main:app --reload --host 0.0.0.0 --port 8000
+```
+
+### 3. Start the dashboard (Terminal 2)
+
+```bash
+streamlit run dashboard/app.py
+```
+
+### 4. Run a training example (Terminal 3)
+
+```bash
+python training_example/train_model.py --scenario exploding_gradients
+# or: overfitting | vanishing_gradients | healthy
+```
+
+Open **http://localhost:8501** to watch the dashboard update in real time.
+
+---
+
+## 🔌 Integrate with Your Own Model
+
+```python
+from sdk.mlcopilot_logger import MLCopilotLogger
+
+logger = MLCopilotLogger(run_id="my_run", api_url="http://localhost:8000")
+
+for epoch in range(num_epochs):
+    # ... your training code ...
+    logger.log(
+        epoch         = epoch,
+        train_loss    = train_loss,
+        val_loss      = val_loss,
+        accuracy      = accuracy,
+        learning_rate = current_lr,
+        gradient_norm = grad_norm,
+    )
+
+logger.finish()
+```
+
+That's it — MLCopilot will detect issues and print alerts to your terminal  
+while the dashboard shows full charts and suggestions.
+
+---
+
+## 🌐 Using a Remote / Published Backend
+
+If the backend is deployed online, just change `api_url`:
+
+```python
+logger = MLCopilotLogger(
+    run_id="my_run",
+    api_url="https://your-mlcopilot-server.com",
+)
+```
+
+Your local training script streams metrics to the online server — the analysis  
+and dashboard work exactly the same way.
+
+---
+
+## 🧠 LLM Integration (Optional)
+
+Set one of these environment variables for richer AI explanations:
+
+```bash
+# OpenAI (GPT-4o-mini)
+export OPENAI_API_KEY=sk-...
+
+# Anthropic (Claude 3 Haiku)
+export ANTHROPIC_API_KEY=sk-ant-...
+```
+
+If no key is set, the system uses built-in rule-based explanations automatically.
+
+---
+
+## 📁 Project Structure
+
+```
+mlcopilot-ai/
+├── backend/
+│   ├── main.py          ← FastAPI entry point (POST /metrics, GET /analysis)
+│   ├── analyzer.py      ← Rule-based ML issue detector
+│   ├── database.py      ← SQLite storage layer
+│   └── llm_engine.py    ← LLM explanation engine (OpenAI / Anthropic / fallback)
+│
+├── sdk/
+│   └── mlcopilot_logger.py  ← Drop-in training logger (the SDK)
+│
+├── training_example/
+│   └── train_model.py   ← PyTorch demo with 4 intentional bug scenarios
+│
+├── dashboard/
+│   └── app.py           ← Streamlit live dashboard
+│
+├── database/
+│   └── mlcopilot.db     ← Auto-created SQLite database
+│
+├── requirements.txt
+└── README.md
+```
+
+---
+
+## 🔍 Detectable Issues
+
+| Issue | Detection Condition |
+|-------|---------------------|
+| **Exploding Gradients** | gradient_norm > 10 |
+| **Vanishing Gradients** | gradient_norm < 1e-7 |
+| **Overfitting** | val_loss rising while train_loss falling, gap > 0.15 |
+| **Underfitting** | accuracy < 55% after 8+ epochs |
+| **Loss Stagnation** | loss improves < 0.005 over 5 consecutive epochs |
+
+---
+
+## 🖥️ API Reference
+
+| Method | Endpoint | Description |
+|--------|----------|-------------|
+| `POST` | `/metrics` | Submit epoch metrics from training script |
+| `GET`  | `/metrics?run_id=<id>` | Retrieve metric history |
+| `GET`  | `/analysis?run_id=<id>` | Full issue analysis with LLM explanations |
+| `GET`  | `/health` | Server health check |
+| `GET`  | `/docs` | Interactive Swagger docs |
+
+---
+
+## 🏆 Hackathon Info
+
+**Event:** AI for Bharat — powered by AWS  
+**Track:** AI for Learning & Developer Productivity  
+**Problem:** ML engineers waste hours debugging training failures with no guidance.  
+**Solution:** MLCopilot AI — detect, explain, and fix ML issues automatically.
 
 ---
 
