@@ -9,6 +9,8 @@ build/
 
 # SQLite database (generated at runtime)
 *.db
+*.db-wal
+*.db-shm
 
 # IDE
 .vscode/
