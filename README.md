@@ -6,9 +6,7 @@ colorTo: blue
 sdk: docker
 app_port: 7860
 pinned: false
-short_description: >-
-  Real-time ML training monitor — detects exploding/vanishing gradients,
-  overfitting, loss stagnation & more. Powered by FastAPI + Streamlit.
+short_description: Real-time ML training debugger for PyTorch models.
 ---
 
 # 🤖 MLCopilot AI
