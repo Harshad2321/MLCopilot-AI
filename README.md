@@ -1,5 +1,4 @@
 ---
-<<<<<<< HEAD
 title: MLCopilot AI
 emoji: 🤖
 colorFrom: purple
@@ -425,14 +424,3 @@ Or run them directly from the dashboard's **🚀 Run Training** page.
 ## 📝 License
 
 MIT
-=======
-title: MLCopilot
-emoji: 📚
-colorFrom: pink
-colorTo: green
-sdk: docker
-pinned: false
----
-
-Check out the configuration reference at https://huggingface.co/docs/hub/spaces-config-reference
->>>>>>> 677e18ef13400210ef97fef68e54b773bc61f715
