@@ -1,3 +1,16 @@
+---
+title: MLCopilot AI
+emoji: 🤖
+colorFrom: purple
+colorTo: blue
+sdk: docker
+app_port: 7860
+pinned: false
+short_description: >-
+  Real-time ML training monitor — detects exploding/vanishing gradients,
+  overfitting, loss stagnation & more. Powered by FastAPI + Streamlit.
+---
+
 # 🤖 MLCopilot AI
 
 > **AI for Bharat Hackathon (powered by AWS) — AI for Learning & Developer Productivity**

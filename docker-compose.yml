@@ -11,7 +11,9 @@ services:
 
   # ── FastAPI Backend ─────────────────────────────────────────────────────────
   api:
-    build: .
+    build:
+      context: .
+      dockerfile: Dockerfile.api
     container_name: mlcopilot-api
     restart: unless-stopped
     ports:

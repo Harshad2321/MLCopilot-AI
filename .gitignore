@@ -25,5 +25,9 @@ venv/
 .venv/
 env/
 
+# Node
+node_modules/
+npm-debug.log*
+
 # Logs
 *.log

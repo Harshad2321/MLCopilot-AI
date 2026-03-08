@@ -1,8 +1,11 @@
-# MLCopilot AI — Dockerfile
-# Builds the FastAPI backend as a lightweight container
+# MLCopilot AI — Hugging Face Spaces Dockerfile
+# Runs both the FastAPI backend (port 8000, internal) and the
+# Streamlit dashboard (port 7860, exposed) in a single container.
 #
-# Build:  docker build -t mlcopilot-api .
-# Run:    docker run -p 8000:8000 --env-file .env mlcopilot-api
+# HF Spaces will automatically expose port 7860.
+# Local Docker usage:
+#   docker build -t mlcopilot-hf .
+#   docker run -p 7860:7860 [-e OPENAI_API_KEY=...] mlcopilot-hf
 
 # ── Base image ────────────────────────────────────────────────────────────────
 FROM python:3.11-slim
@@ -11,19 +14,30 @@ FROM python:3.11-slim
 ENV PYTHONDONTWRITEBYTECODE=1 \
     PYTHONUNBUFFERED=1
 
+# HF Spaces requires a non-root user with uid 1000
+ENV HOME=/home/user \
+    PATH=/home/user/.local/bin:$PATH
+
 # ── System dependencies ───────────────────────────────────────────────────────
 RUN apt-get update && apt-get install -y --no-install-recommends \
         gcc \
         libpq-dev \
+        curl \
     && rm -rf /var/lib/apt/lists/*
 
-# ── Working directory ─────────────────────────────────────────────────────────
-WORKDIR /app
+# ── Create non-root user ──────────────────────────────────────────────────────
+RUN useradd -m -u 1000 user
+
+USER user
+WORKDIR /home/user/app
 
 # ── Python dependencies ───────────────────────────────────────────────────────
-# Copy requirements first so Docker caches this layer
-COPY requirements.txt .
-# Install without PyTorch (not needed on the server — only the training machine needs it)
+# Install CPU-only PyTorch first (keeps the image lean — no CUDA needed on HF)
+RUN pip install --no-cache-dir --upgrade pip && \
+    pip install --no-cache-dir \
+        torch torchvision --index-url https://download.pytorch.org/whl/cpu
+
+# Install remaining dependencies
 RUN pip install --no-cache-dir \
         fastapi \
         "uvicorn[standard]" \
@@ -32,24 +46,22 @@ RUN pip install --no-cache-dir \
         pandas \
         openai \
         anthropic \
-        boto3 \
-        psycopg2-binary \
-        python-dotenv
+        python-dotenv \
+        streamlit \
+        plotly \
+        optuna
 
 # ── Application code ──────────────────────────────────────────────────────────
-COPY backend/   ./backend/
-COPY database/  ./database/
-COPY sdk/       ./sdk/
+COPY --chown=user . .
 
-# ── Database directory (used by SQLite) ───────────────────────────────────────
-RUN mkdir -p /app/database
+# ── Persistent database directory ─────────────────────────────────────────────
+RUN mkdir -p /home/user/app/database
 
-# ── Expose API port ───────────────────────────────────────────────────────────
-EXPOSE 8000
+# ── Startup script ────────────────────────────────────────────────────────────
+RUN chmod +x /home/user/app/start.sh
 
-# ── Health check ──────────────────────────────────────────────────────────────
-HEALTHCHECK --interval=30s --timeout=5s --start-period=10s --retries=3 \
-    CMD python -c "import urllib.request; urllib.request.urlopen('http://localhost:8000/health')"
+# ── Expose Streamlit port (HF Spaces default) ─────────────────────────────────
+EXPOSE 7860
 
-# ── Start server ──────────────────────────────────────────────────────────────
-CMD ["uvicorn", "backend.main:app", "--host", "0.0.0.0", "--port", "8000", "--workers", "2"]
+# ── Launch both services ──────────────────────────────────────────────────────
+CMD ["/home/user/app/start.sh"]
